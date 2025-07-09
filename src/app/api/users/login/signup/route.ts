@@ -1,6 +1,5 @@
 import {connect} from '@/app/dbConfig/dbConfig';
 import User from '@/app/models/userModel';
-import { error } from 'console';
 import { NextResponse,NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/app/helpers/mailer';
@@ -11,7 +10,7 @@ export default async function POST(request:NextRequest){
 
     try {
 
-        const req = request.json();
+        const req = await request.json();
         const [username, password, email] =  req;
         
         // validation
@@ -38,10 +37,12 @@ export default async function POST(request:NextRequest){
 
        // send verification email
 
+         const hashedToken = await bcrypt.hash(savedUser._id.toString(), 10);
          await sendEmail({
             email,
-            emailType : 'verification',
-            userId : savedUser._id,
+            emailType: 'verification',
+            userId: savedUser._id.toString(),
+            hashedToken
          })
          return NextResponse.json(
             {
@@ -51,8 +52,8 @@ export default async function POST(request:NextRequest){
             }
          )
         
-    } catch (error :any) {
-        return NextResponse.json({error: error.message}, {status: 500});
+    } catch (error:unknown) {
+        return NextResponse.json({error: error instanceof Error ? error.message : 'Something went wrong'}, {status: 500});
     }
 }
 
