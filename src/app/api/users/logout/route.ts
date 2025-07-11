@@ -1,10 +1,9 @@
 import { connect } from "@/app/dbConfig/dbConfig";
-import User from "@/app/models/userModel";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 connect();
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         
      const response =  NextResponse.json({
