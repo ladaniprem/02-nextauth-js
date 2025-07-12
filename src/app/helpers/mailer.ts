@@ -1,7 +1,5 @@
-import bcrypt from "bcryptjs";
-import nodemailer from "nodemailer"
-import User from "../models/userModel";
-
+import User from "../models/userModel.js";
+import nodemailer from "nodemailer";
 interface EmailParams {
     email: string;
     emailType: string;
@@ -17,52 +15,57 @@ export const sendEmail = async({
 
 }: EmailParams)=> {
     try {
-
-        await bcrypt.hash(userId.toString(),10);
+        const hashedTokenValue = hashedToken;
+    //    console.log(`verify user ${emailType} with verification`);
 
     if (emailType === 'verification') {
         await User.findByIdAndUpdate(userId, {
-            verifyToken: hashedToken,
-            verifyTokenExpiry: Date.now() + 3600000
+            $set: {
+                verifyToken: hashedTokenValue,
+                verifyTokenExpiry: Date.now() + 3600000
+            }
         });
+        console.log(`Updated user ${userId} with verification token`);
     }
     else if (emailType === 'RESET') {
         await User.findByIdAndUpdate(userId, {
-            forgotPasswordToken: hashedToken,
-            forgotPasswordTokenExpiry: Date.now() + 3600000
+            forgotPasswordToken: hashedTokenValue,
+            forgotPasswordTokenExpiry: new Date (Date.now() + 3600000)
         });
+        console.log(`Updated user ${userId} with reset token`);
     }
 
-        const transporter = nodemailer.createTransport({
-          host: "sandbox.smtp.mailtrap.io",
-          port: 2525,
-          auth: {
-          user: "5d2b322d5ab882", // ❌ 🔥
-          pass: "5b07caba543764", // ❌
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
+  port: Number(process.env.SMTP_PORT) || 2525,
+  auth: {
+    user: process.env.SMTP_USER || "5d2b322d5ab882", // fallback for testing
+    pass: process.env.SMTP_PASS || "5b07caba543764"  // fallback for testing
   }
 });
 
         const mailOptions = {
             from: 'prem123@gmail.com',
-            to : "" + email,
-            subject: emailType === "Verify" ? "Verify your email" : "Reset your password",
-            // text: emailType === "welcome" ? "Thank you for signing up!" : "Click here to reset your password.",
+            to: email,
+            subject: emailType === "verification" ? "Verify your email" : "Reset your password",
             html: emailType === "verification" 
                 ? `<p>Click <a href="${process.env.DOMAIN}/verifyemail?token=${hashedToken}">here</a> to verify your email.</p>
                    <p>This link will expire in 1 hour.</p>
                    <p>${process.env.DOMAIN}/verifyemail?token=${hashedToken}</p>`
-                : `<p>Click <a href="${process.env.DOMAIN}/forgotpassword?token=${hashedToken}">here</a> to reset your password.</p>
+                : `<p>Click <a href="${process.env.DOMAIN}/forgotpassword?token=${hashedTokenValue}">here</a> to reset your password.</p>
                    <p>This link will expire in 1 hour.</p>
-                   <p>${process.env.DOMAIN}/forgotpassword?token=${hashedToken}</p>`
+                   <p>${process.env.DOMAIN}/forgotpassword?token=${hashedTokenValue}</p>`
     } // Note :- when the open to link to verify the browser but the some the directly open it to some of the users fake to verify it '
     // Note :- most important to handle the error in the production code to remember it.
-    // Note :- verifycation mostly used it the page to provide it after verify it.
+    // Note :- verification mostly used it the page to provide it after verify it.
 
     const mailResponse = await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${email}:`, mailResponse.messageId);
     return mailResponse;
     }
     
     catch (error: unknown) {
+        console.error('Email sending error:', error);
         if (error instanceof Error) {
             throw new Error(`Failed to send email: ${error.message}`);
         }

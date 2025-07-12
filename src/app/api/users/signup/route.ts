@@ -4,9 +4,13 @@ import { NextResponse,NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/app/helpers/mailer';
 
-connect();
+let isConnected = false;
 
 export async function POST(request: NextRequest) {
+    if (!isConnected) {
+        await connect();
+        isConnected = true;
+    }
     try {
         const reqBody = await request.json();
         const { username, email, password } = reqBody;
@@ -33,7 +37,7 @@ export async function POST(request: NextRequest) {
                 {status:400});
         }
 
-        const salt = await bcrypt.genSaltSync(10);
+        const salt = bcrypt.genSaltSync(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
        const newUser =  new User({
@@ -60,6 +64,7 @@ export async function POST(request: NextRequest) {
            console.error("Email sending failed:", emailError);
            // Continue anyway - don't fail registration due to email issues
        }
+       
 
          return NextResponse.json({
                 message: "User registered successfully",
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
         
         if (error instanceof Error) {
             // Handle specific MongoDB errors
-            if (error.message.includes('E11000')) {
+            if (error.message.includes('duplicate key error')) {
                 return NextResponse.json({
                     error: "User with this email or username already exists"
                 }, { status: 400 });
