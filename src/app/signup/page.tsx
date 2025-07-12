@@ -1,6 +1,18 @@
 'use client'
 import React, { useState } from 'react'
-
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import axios from 'axios'
+import {toast} from 'react-hot-toast'
+import { useRouter } from 'next/router'
 function SignupPage() {
   const [formData, setFormData] = useState({
     username: '',
@@ -41,68 +53,87 @@ function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign up for an account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <input
-                type="text"
-                required
-                className="relative block w-full px-3 py-2 border border-gray-300 rounded-t-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Username"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              />
-            </div>
-            <div>
-              <input
-                type="email"
-                required
-                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                required
-                className="relative block w-full px-3 py-2 border border-gray-300 rounded-b-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              />
-            </div>
-          </div>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-black">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
+          <CardDescription className="text-center text-gray-500">
+            Enter your details to create your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="username" className="block text-sm font-medium">
+                  Username
+                </Label>
+                <Input
+                  id="username"
+                  type="text"
+                  required
+                  className="mt-1"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                />
+              </div>
 
-          {message && (
-            <div className={`text-center p-3 rounded ${
-              message.startsWith('Success') 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-red-100 text-red-700'
-            }`}>
-              {message}
-            </div>
-          )}
+              <div>
+                <Label htmlFor="email" className="block text-sm font-medium">
+                  Email address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  className="mt-1"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
 
-          <div>
-            <button
+              <div>
+                <Label htmlFor="password" className="block text-sm font-medium">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  className="mt-1"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {message && (
+              <div className={`p-3 rounded-md text-sm text-center ${
+                message.startsWith('Success') 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'bg-red-100 text-red-700'
+              }`}>
+                {message}
+              </div>
+            )}
+
+            <Button
               type="submit"
+              className="w-full py-2 bg-primary hover:bg-primary/90"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
               {loading ? 'Signing up...' : 'Sign up'}
-            </button>
-          </div>
-        </form>
-      </div>
+            </Button>
+
+            <div className="text-center text-sm text-gray-500">
+              Already have an account?{" "}
+              <a href="/login" className="font-medium text-primary hover:text-primary/90 underline underline-offset-4">
+                Login
+              </a>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
