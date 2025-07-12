@@ -17,7 +17,7 @@ function Profile() {
     try {
       const response = await axios.post('/api/users/me')
       console.log("User data fetched successfully:", response.data);
-      setData(response.data);
+      setData(response.data._id);
     } catch (error: unknown) {
       console.error("Error fetching user data:", error);
       toast.error("Failed to fetch user data");
